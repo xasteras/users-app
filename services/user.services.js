@@ -1,7 +1,7 @@
 // Αν ήθελα να σπάσει περισσότερο η εφαρμογή και να φτιάξουμε ένα φάκελο Services και ο Controller δρομολογεί τα rwquest εδω
 const User = require('../models/user.model');
 
-function findAll() {              // φτιάχνουμε μια finction 
+function findAll() {              // φτιάχνουμε μια function 
   const result = User.find();
   return result;
 }
