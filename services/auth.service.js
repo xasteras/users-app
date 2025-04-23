@@ -1,6 +1,8 @@
 // θα δημιουργήσουμε μια function που θα μου δημιουργεί το JWT token και να μου επιστρέψει το αποτέλεσμα της function πίσω
 
 const jwt = require('jsonwebtoken');      // εκχωρούμε την βιβλιοθήκη jsonwebtoken
+const { OAuth2Client } = require('google-auth-library')   // εκχωρούμε την βιβλιοθήκη που βρίσκεται στην google-auth-client
+
 
 function generateAccessToken(user){       // παίρνει ως input τα στοιχεία ενός user
 
@@ -31,4 +33,36 @@ function verifyAccessToken(token){            // φτιάχνουμε μια σ�
   }
 }
 
-module.exports = { generateAccessToken, verifyAccessToken }
+async function googleAuth(code) {             // παίρνει ένα input το code
+  console.log("Google login", code);          // ένα console log για να ξέρω οτι έχω φτάσει μέχρι εδώ
+  const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;             // μια μεταβλητή CLIENT_ID που εκχωρώ αυτό που έχω στο .enw GOOGLE_CLIENT_ID
+  const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;     // μια μεταβλητή CLIENT_SECRET που εκχωρώ αυτό που έχω στο .enw GOOGLE_CLIENT_SECRET
+  const REDIRECT_URI = process.env.REDIRECT_URI;              // μια μεταβλητή REDIRECT_URI που εκχωρώ αυτό που έχω στο .enw REDIRECT_URI
+
+  const oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);    // μια μεταβλητή oauth2Client εκχωρώ αυτό που έχω βάλει απο την βιβλιοθήκη OAuth2Client = google-auth-library και αρχικοποιείται περνώντας το CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
+
+  try {
+    // Exchange code for tokens
+    const { tokens } = await oauth2Client.getToken(code)      // χρησιμοποιώ την μεταβλητή tokens απο την oauth library και του λέμε απο το oauth2Client θα τρέξεις μια διαδικασία getToken και του περνάω το code απο την googleAuth
+    console.log("Step 1", tokens)                             // εμφάνισει token στο console log
+    oauth2Client.setCredentials(tokens)                       // για το token που μου έδωσε να το πιστοποιήσει η google με setCredentials 
+
+    // Επαλήθευση του ID token για να πάρουμε πληροφορίες του χρήστη
+    const ticket = await oauth2Client.verifyIdToken({         
+      idToken: tokens.id_token,                               // του στέλνουμε μια μεταβλητή idToken που του βάζουμε το id_token
+      audience: CLIENT_ID                                     // του στέλνουμε μια μεταβλητή audience που του βάζουμε το CLIENT_ID
+    });
+
+    console.log("Step 2")
+
+    const userInfo = await ticket.getPayload();               // απο το ticket που έχουμε δημιουργήσει να μας δώσει το payload απο το token
+    console.log("Google User", userInfo);
+    return {user: userInfo, tokens}                           // επιστροφή του χρήστη και των tokens
+  } catch (error) {
+    console.log("Error in google authentication", error);
+    return { error: "Failed to authenticate with google"}
+  }
+}
+
+// Εξαγωγή όλων των συναρτήσεων για χρήση σε άλλα modules 
+module.exports = { generateAccessToken, verifyAccessToken, googleAuth }

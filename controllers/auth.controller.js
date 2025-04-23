@@ -27,3 +27,21 @@ exports.login = async(req, res) =>{
     res.status(400).json({status: false, data: err})
   }
 }
+
+// Handler function for Google Login via OAuth2
+exports.googleLogin = async(req, res) => {
+  const code = req.query.code;                        // Παίρνουμε το authorization code από το query string
+
+  if (!code) {
+    res.status(400).json({status: false, data: "Authorization code is missing"});     // Αν δεν υπάρχει code, επιστρέφουμε error 400
+  } else {
+    let user = await authService.googleAuth(code);    // Στέλνουμε το code στην υπηρεσία ελέγχου ταυτότητας για επιβεβαίωση/ανταλλαγή με token
+
+    if (user){                                        // Αν επιστραφεί χρήστης, θεωρούμε επιτυχημένη την είσοδο
+      console.log(">>>", user);                       // Εκτυπώνουμε τα στοιχεία του χρήστη στο console για debugging
+      res.status(200).json({status: true, data: user});  // Επιστρέφουμε επιτυχία με τα δεδομένα του χρήστη
+    } else {
+      res.status(400).json({status:false, data: "Problem in Google Login"});          // Αν αποτύχει η διαδικασία, επιστρέφουμε error 400
+    }
+  }
+}
