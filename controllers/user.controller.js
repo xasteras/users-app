@@ -12,11 +12,11 @@ exports.findAll = async(req, res) => {          // χρήση async
     const result = await userService.findAll(); // αντι να τρέχει απο το Controller οπως η πάνω τωρα τρέχει απο το Service
     res.status(200).json({status: true, data: result});   // Αν βρεις τους users επιστρεψέ τους με ένα status 200, JSON το οποίο θα περιέχει μια μεταβλητή status = true και σε μία άλλη μεταβήτή data το αποτέλεσμα αυτού του find
 
-    logger.info("INFO, Success in reading all users");    // εμφάνιση πληροφορίας που έχει γίνει log
+    logger.info("Success in reading all users");    // εμφάνιση πληροφορίας που έχει γίνει log και δημιουργεί ένα JSON με την πληροφορία στις παρενθέσεις
 
   } catch (err) {                               
     console.log("Problem in reading users", err);
-    logger.error("Error, Problem in reading all users")   // εμφάνιση πληροφοριίας που έχει γίνει log
+    logger.error("Problem in reading all users")   // εμφάνιση πληροφοριίας που έχει γίνει log και δημιουργεί ένα JSON με την πληροφορία στις παρενθέσεις
     res.status(400).json({status:false, data: err});      // Στείλε πίσω ένα JSON με το status = false και στα data το περιεχόμενο του μηνύματος
   }
 }
